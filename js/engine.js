@@ -25,8 +25,8 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = 505;
-    canvas.height = 606;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -80,7 +80,7 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions(dt);
     }
 
     /* This is called by the update function  and loops through all of the
@@ -94,7 +94,33 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+        player.update(dt);
+    }
+
+    function checkCollisions(dt) {
+        allEnemies.forEach(function(enemy) {
+            // Check to see if the enemy and the player are together
+            // if (enemy.col === player.col && enemy.row === player.row) {
+            if (enemy.row === player.row) {
+                // Only check the col after confirming the row, for optimization
+
+                if  (enemy.x < player.x + player.width &&
+                       enemy.x + enemy.width > player.x) {
+                       
+                       // Collision detection resource:
+                        //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
+                       // No don't use this calculation for row collisions
+                       //       if (enemy.x < player.x + player.width &&
+                       //       enemy.x + enemy.width > player.x &&
+                       //       enemy.y < player.y + player.height &&
+                       //       enemy.height + enemy.y > player.y) {
+
+                    console.log("Collision at row: " + player.row + " col: " + player.col);
+                    player.reset();
+                }
+            }
+        });
+        player.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -115,8 +141,8 @@ var Engine = (function(global) {
                 'images/grass-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
-            numRows = 6,
-            numCols = 5,
+            numRows = maxRows + 1,
+            numCols = maxCols + 1,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
@@ -132,7 +158,11 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                ctx.drawImage(Resources.get(rowImages[row]), col * colMult, row * rowMult);
+            }
+            if (row == 0) {
+                // Now render the exit path
+                ctx.drawImage(Resources.get(player.exitSprite), player.exitCol * colMult, 0);
             }
         }
 
@@ -167,12 +197,28 @@ var Engine = (function(global) {
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
      */
+     // TAN: Loading all images
     Resources.load([
         'images/stone-block.png',
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png', 
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png',
+        'images/Gem Blue.png',
+        'images/Gem Green.png',
+        'images/Gem Orange.png',
+        'images/grass-block.png',
+        'images/Heart.png',
+        'images/Key.png',
+        'images/Rock.png',
+        'images/Selector.png',
+        'images/Star.png',
+        'images/stone-block.png',
+        'images/water-block.png'
     ]);
     Resources.onReady(init);
 
