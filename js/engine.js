@@ -25,8 +25,8 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    canvas.width = gameSettings.canvasWidth;
+    canvas.height = gameSettings.canvasHeight;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -116,7 +116,7 @@ var Engine = (function(global) {
                        //       enemy.height + enemy.y > player.y) {
 
                     console.log("Collision at row: " + player.row + " col: " + player.col);
-                    player.reset();
+                    player.loseLife();
                 }
             }
         });
@@ -141,8 +141,8 @@ var Engine = (function(global) {
                 'images/grass-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
-            numRows = maxRows + 1,
-            numCols = maxCols + 1,
+            numRows = gameSettings.maxRows + 1,
+            numCols = gameSettings.maxCols + 1,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
@@ -158,11 +158,11 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * colMult, row * rowMult);
+                ctx.drawImage(Resources.get(rowImages[row]), col * gameSettings.colMult, row * gameSettings.rowMult);
             }
             if (row == 0) {
                 // Now render the exit path
-                ctx.drawImage(Resources.get(player.exitSprite), player.exitCol * colMult, 0);
+                ctx.drawImage(Resources.get(player.exitSprite), player.exitCol * gameSettings.colMult, 0);
             }
         }
 

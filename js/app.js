@@ -2,24 +2,32 @@
 // Don't use hard-coded positional multipliers in forumulas
 //      The following multipliers will be used to position
 //      objects on the game board.
-var colMult = 101;
-var rowMult = 83;
-var maxCols = 4;    // Default 4
-var maxRows = 5;    // Default 5 (TODO: needs work to fix the block layout for rows)
 
-var canvasWidth = (maxCols + 1) * colMult; // 505;
-var canvasHeight = (maxRows + 1) * rowMult + 108; // 606;
+var GameSettings = function() {
+    this.colMult = 101;
+    this.rowMult = 83;
+    this.maxCols = 4;    // Default 4
+    this.maxRows = 5;    // Default 5 (TODO: needs work to fix the block layout for rows)
 
-var spriteWidth = 101;
-var spriteHeight = 171;
-var EnemyRowOffset = -20;
-var PlayerRowOffset = -40;
-var collisionRadius = 1.8;
+    this.canvasWidth = (this.maxCols + 1) * this.colMult; // 505;
+    this.canvasHeight = (this.maxRows + 1) * this.rowMult + 108; // 606;
+
+    this.spriteHeight = 101;
+    this.spriteHeight = 171;
+    this.enemyRowOffset = -20;
+    this.playerRowOffset = -40;
+    this.collisionRadius = 1.8;
+
+    this.movePoints = 10;
+    this.goalPoints = 1000;
+}
+// Initialze the game settings for use
+gameSettings = new GameSettings();
 
 var GameChar = function(imageFile) {
     // Template for game character
-    this.width = spriteWidth / collisionRadius;
-    this.height = spriteHeight / collisionRadius;
+    this.width = gameSettings.spriteHeight / gameSettings.collisionRadius;
+    this.height = gameSettings.spriteHeight / gameSettings.collisionRadius;
 
     this.sprite = imageFile // Game Character Image
     this.exitSprite = 'images/grass-block.png';
@@ -48,13 +56,13 @@ Enemy.prototype.update = function(dt) {
     // which will ensure the game runs at the same speed for
     // all computers.
     this.x += this.speed * dt;
-    if (this.x > canvasWidth) {
-        this.x = colMult * -1;
+    if (this.x > gameSettings.canvasWidth) {
+        this.x = gameSettings.colMult * -1;
         this.reset();
     }
 
     // Now determinen the new column
-    this.col = parseInt(this.x / colMult);
+    this.col = parseInt(this.x / gameSettings.colMult);
 //    console.log("Enemy/Player col, row: " 
 //        + this.col + "/" + player.col + " "
 //        + this.row + "/" + player.row);
@@ -63,10 +71,10 @@ Enemy.prototype.update = function(dt) {
 // Create a random row for the Enemy
 Enemy.prototype.reset = function() {
     this.col = -1;
-    this.x = this.col * colMult; // Always start offscreen
+    this.x = this.col * gameSettings.colMult; // Always start offscreen
 
-    this.row = (Math.floor(Math.random() * (maxRows - 2)) + 1);
-    this.y = this.row * rowMult + EnemyRowOffset;   // Always start at leas 1 row down.
+    this.row = (Math.floor(Math.random() * (gameSettings.maxRows - 2)) + 1);
+    this.y = this.row * gameSettings.rowMult + gameSettings.enemyRowOffset;   // Always start at leas 1 row down.
     this.speed = ((Math.floor(Math.random() * 2.5) + 1) * 50) + 50;   // Offer up to 4 diff speeds
     // console.log("Reset Enemy x: " + this.x + " y: " + this.y + " speed:" + this.speed);
 
@@ -84,8 +92,8 @@ var Player = function() {
 
     GameChar.call(this, 'images/char-princess-girl.png');
 
-    this.col = parseInt(maxCols/2);
-    this.row = maxRows;
+    this.col = parseInt(gameSettings.maxCols/2);
+    this.row = gameSettings.maxRows;
 
     this.moving = false;    // True when player is animating to new position
     this.destX = 0;
@@ -96,6 +104,10 @@ var Player = function() {
     this.moveToCol = -1;
     this.moveToRow = -1;
     this.lastKeyCode = '';
+
+    this.lives = 5;
+    this.level = 1;
+    this.score = 0;
 
     this.reset();
 }
@@ -136,17 +148,49 @@ Player.prototype.update = function(dt) {
             }
         }   
 
+
+        // Check to see if player has reached the goal
+        if (this.y <= 1 ) {
+            if (this.exitCol == this.col) {
+                this.level++;
+                this.updateScore(gameSettings.goalPoints);
+                console.log("Completed level");
+                player.reset();
+            } else {
+                // Not a valid exit row, lose a life!
+                this.loseLife();
+            }
+            console.log("Goal: y=" + this.y + " exitCol=" + this.exitCol
+                            + " col=" + this.col
+                            + " destCol=" + this.destRow);
+        } else if (!this.moving) {
+            // Move complete, add to the score
+            this.updateScore(gameSettings.movePoints);
+        }
+
+
+
     }
 
 }
+Player.prototype.updateScore = function (newPoints) {
+    this.score += newPoints;
+    console.log("New Score: " + this.score);
+}
+Player.prototype.loseLife = function() {
+    this.lives--;
+    console.log("Life lost: " + this.lives + " remaining.");
+    this.reset();
+}
+
 Player.prototype.reset = function() {
     // Reset to the start position for player
-    this.col = parseInt(maxCols/2);
-    this.row = maxRows;
-    this.x = this.col * colMult;
-    this.y = (this.row * rowMult) + PlayerRowOffset;
+    this.col = parseInt(gameSettings.maxCols/2);
+    this.row = gameSettings.maxRows - 1;
+    this.x = this.col * gameSettings.colMult;
+    this.y = (this.row * gameSettings.rowMult) + gameSettings.playerRowOffset;
     this.moving = false;
-    this.exitCol = Math.floor(Math.random() * (maxCols + 1)); // Setup the exit path
+    this.exitCol = Math.floor(Math.random() * (gameSettings.maxCols + 1)); // Setup the exit path
 }
 
 Player.prototype.handleInput = function(keyCode) {
@@ -167,21 +211,21 @@ Player.prototype.handleInput = function(keyCode) {
                 }            
                 break;
             case 'up': // Up
-                if (this.row > 1) {
+                if (this.row > 0) {
                     this.row--;
                     this.moving = true;
                     this.lastKeyCode = keyCode;
                 }
                 break;
             case 'right': // Right
-                if (this.col < maxCols) {
+                if (this.col < gameSettings.maxCols) {
                     this.col++;
                     this.moving = true;
                     this.lastKeyCode = keyCode;
                 }
                 break;
             case 'down': // Down
-                if (this.row < maxRows) {
+                if (this.row < gameSettings.maxRows - 1) {
                     this.row++;
                     this.moving = true;
                     this.lastKeyCode = keyCode;
@@ -193,8 +237,8 @@ Player.prototype.handleInput = function(keyCode) {
     
 
         if (this.moving) {
-            this.destX = this.col * colMult;
-            this.destY = (this.row * rowMult) + PlayerRowOffset;
+            this.destX = this.col * gameSettings.colMult;
+            this.destY = (this.row * gameSettings.rowMult) + gameSettings.playerRowOffset;
             console.log("Moving is true. New x,y:" + this.destX + ", " + this.destY
                         + " Current x,y: " + this.x + ", " + this.y);
         }
