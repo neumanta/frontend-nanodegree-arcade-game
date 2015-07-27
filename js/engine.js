@@ -14,7 +14,7 @@
  * a little simpler to work with.
  */
 
-'use strict'
+'use strict';
 
 var Engine = (function(global) {
     /* Predefine the variables we'll be using within this scope,
@@ -110,7 +110,6 @@ var Engine = (function(global) {
 
                 if  (enemy.x < player.x + player.width &&
                        enemy.x + enemy.width > player.x) {
-                       
                        // Collision detection resource:
                         //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
                        // No don't use this calculation for row collisions
@@ -119,7 +118,7 @@ var Engine = (function(global) {
                        //       enemy.y < player.y + player.height &&
                        //       enemy.height + enemy.y > player.y) {
 
-                    console.log("Collision at row: " + player.row + " col: " + player.col);
+                    // console.log("Collision at row: " + player.row + " col: " + player.col);
                     player.loseLife();
                 }
             }
@@ -137,17 +136,27 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
-        var rowImages = [
-                'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
-            ],
-            numRows = gameSettings.maxRows + 1,
+
+        if (player.level === 0 
+                && (canvas.width != gameSettings.canvasWidth 
+                || canvas.height != gameSettings.canvasHeight)) {
+            // Adjust the canvas size if it has changed
+            canvas.width = gameSettings.canvasWidth;
+            canvas.height = gameSettings.canvasHeight;
+        }
+
+
+        var numRows = gameSettings.maxRows + 1,
             numCols = gameSettings.maxCols + 1,
             row, col;
+
+        // Allow for a larger number of rows
+        var rowImages = ['images/water-block.png'];   // Top row is water
+        for (var i = 1; i < numRows - 2; i++) {
+            rowImages.push('images/stone-block.png');   // Row 1 of x of stone
+        } 
+        rowImages.push('images/grass-block.png');   // Row 1 of 2 of grass
+        rowImages.push('images/grass-block.png');    // Row 2 of 2 of grass
 
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that

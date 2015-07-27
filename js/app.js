@@ -3,13 +3,13 @@
 //      The following multipliers will be used to position
 //      objects on the game board.
 
-'use strict'
+'use strict';
 
-var GameSettings = function() {
+var GameSettings = function(numCols, numRows) {
     this.colMult = 101;
     this.rowMult = 83;
-    this.maxCols = 4;    // Default 4
-    this.maxRows = 5;    // Default 5 (TODO: needs work to fix the block layout for rows)
+    this.maxCols = numCols;    // Default 4
+    this.maxRows = numRows;    // Default 5
 
     this.canvasWidth = (this.maxCols + 1) * this.colMult; // 505;
     this.canvasHeight = (this.maxRows + 1) * this.rowMult + 108; // 606;
@@ -38,7 +38,7 @@ GameSettings.prototype.startGame = function(startLevel) {
     if (startLevel > 0) {
         player.reset();
     }
-    console.log("******* NEW GAME STARTED ******")    
+    // console.log("******* NEW GAME STARTED ******")    
 
 }
 GameSettings.prototype.renderStartScreen = function() {
@@ -197,15 +197,15 @@ Player.prototype.update = function(dt) {
                 this.level++;
                 this.updateScore(gameSettings.goalPoints);
                 allEnemies.push(new Enemy());
-                console.log("Completed level");
+                // console.log("Completed level");
                 player.reset(true); // provide a new exit path
             } else {
                 // Not a valid exit row, lose a life!
                 this.loseLife();
             }
-            console.log("Goal: y=" + this.y + " exitCol=" + this.exitCol
-                            + " col=" + this.col
-                            + " destCol=" + this.destRow);
+            // console.log("Goal: y=" + this.y + " exitCol=" + this.exitCol
+            //                + " col=" + this.col
+            //                + " destCol=" + this.destRow);
         } else if (!this.moving) {
             // Move complete, add to the score
             this.updateScore(gameSettings.movePoints);
@@ -218,13 +218,13 @@ Player.prototype.update = function(dt) {
 }
 Player.prototype.updateScore = function (newPoints) {
     this.score += newPoints;
-    console.log("New Score: " + this.score);
+    // console.log("New Score: " + this.score);
 }
 Player.prototype.loseLife = function() {
     this.lives--;
 
     if (this.lives > 0) { 
-        console.log("Life lost: " + this.lives + " remaining.");
+        // console.log("Life lost: " + this.lives + " remaining.");
         this.reset(false); // Don't change the exit path
         this.sprite = this.playerList[this.lives - 1];
     } else {
@@ -275,7 +275,7 @@ Player.prototype.handleInput = function(keyCode) {
         //      This will allow the player to turn back quickly.
         // Otherwise there will be a buffer effect and will cause problems.
 
-        console.log("keyCode: " + keyCode);
+        // console.log("keyCode: " + keyCode);
         switch (keyCode) {
             case 'left': // Left
                 if (this.col > 0) {
@@ -313,8 +313,8 @@ Player.prototype.handleInput = function(keyCode) {
         if (this.moving) {
             this.destX = this.col * gameSettings.colMult;
             this.destY = (this.row * gameSettings.rowMult) + gameSettings.playerRowOffset;
-            console.log("Moving is true. New x,y:" + this.destX + ", " + this.destY
-                        + " Current x,y: " + this.x + ", " + this.y);
+            // console.log("Moving is true. New x,y:" + this.destX + ", " + this.destY
+            //            + " Current x,y: " + this.x + ", " + this.y);
         }
 
 //        console.log("Attempting to start new game: " + this.level + " key: " + keyCode);
@@ -325,7 +325,7 @@ Player.prototype.handleInput = function(keyCode) {
 }
 
 // Initialze the game settings for use
-var gameSettings = new GameSettings();
+var gameSettings = new GameSettings(4, 5);
 var player;     // Define player as global but don't initialize yet
 var allEnemies; // Define enemies as global but don't initialize
 // This method will start a new game resetting the level details
@@ -342,12 +342,22 @@ document.addEventListener('keyup', function(e) {
         40: 'down',
         32: 'space'
     };
-    console.log("KeyCode: " + e.keyCode)
+    // console.log("KeyCode: " + e.keyCode)
     player.handleInput(allowedKeys[e.keyCode]);
 
-    console.log("event listner to start new game: " + player.level + " key: " + e.keyCode);
-    if (player.level === 0 && e.keyCode === 32) {
-        gameSettings.startGame(1);
+    // console.log("event listner to start new game: " + player.level + " key: " + e.keyCode);
+    if (player.level === 0) {
+        if (e.keyCode === 32) {
+            gameSettings.startGame(1);
+        } else if (!e.shiftKey && e.keyCode >= 48 && e.keyCode <= 57) {
+            // Check for keys 0 through 9 to change the number of Columns
+            console.log("Column count change to: " + (4 + (e.keyCode - 48)));
+            gameSettings = new GameSettings(4 + (e.keyCode - 48), gameSettings.maxRows);
+        } else if (e.shiftKey && e.keyCode >= 48 && e.keyCode <= 57) {
+            // Check for keys 0 through 9 to change the number of Rows
+            console.log("Row count change to: " + (4 + (e.keyCode - 48)));
+            gameSettings = new GameSettings(gameSettings.maxCols, 5 + (e.keyCode - 48));
+        }
     }
 
 });
