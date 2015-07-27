@@ -1,6 +1,14 @@
 frontend-nanodegree-arcade-game
 ===============================
 
-Students should use this rubric: https://www.udacity.com/course/viewer#!/c-ud015/l-3072058665/m-3072588797
+#Instructions
 
-for self-checking their submission.
+##Loading Nano-Arcade-Game
+This game is currently designed to run from the local
+
+##Starting Nano-Arcade-Game
+
+##Scoring
+
+##Credits
+Created by Thomas Neuman using the base project code from the Udacity Frontend Nanodegree Arcade Game project

@@ -3,6 +3,8 @@
 //      The following multipliers will be used to position
 //      objects on the game board.
 
+'use strict'
+
 var GameSettings = function() {
     this.colMult = 101;
     this.rowMult = 83;
@@ -20,19 +22,42 @@ var GameSettings = function() {
 
     this.movePoints = 10;
     this.goalPoints = 1000;
+
+    this.lastLevel = 0;    // preserve the level/score through game end
+    this.lastScore = 0;
+
 }
-GameSettings.prototype.startGame = function() {
+GameSettings.prototype.startGame = function(startLevel) {
     // Now instantiate your objects.
     // Place all enemy objects in an array called allEnemies
     // Place the player object in a variable called player
     // Global objects setup
     player = new Player();
+    player.level = startLevel;
     allEnemies = [new Enemy()]; // Only start with one enimy. More will come!
+    if (startLevel > 0) {
+        player.reset();
+    }
     console.log("******* NEW GAME STARTED ******")    
 
 }
-// Initialze the game settings for use
-gameSettings = new GameSettings();
+GameSettings.prototype.renderStartScreen = function() {
+    // Display game start screen
+    var gameText1 = "Ready for new game?";
+    var gameText2 = "Press spacebar";
+    var textPos = 2.0;
+    ctx.font = "30pt Impact";
+    ctx.textAlign = "center";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.fillStyle = "white";
+    ctx.fillText(gameText1, gameSettings.canvasWidth / 2, gameSettings.canvasHeight / textPos);
+    ctx.strokeText(gameText1, gameSettings.canvasWidth / 2, gameSettings.canvasHeight / textPos);
+    
+    ctx.fillText(gameText2, gameSettings.canvasWidth / 2, (gameSettings.canvasHeight / textPos) + 50);
+    ctx.strokeText(gameText2, gameSettings.canvasWidth / 2, (gameSettings.canvasHeight / textPos) + 50);
+}
+
 
 var GameChar = function(imageFile) {
     // Template for game character
@@ -41,7 +66,7 @@ var GameChar = function(imageFile) {
 
     this.sprite = imageFile; // Game Character Image
     this.exitSprite = 'images/grass-block.png';
-    this.exitCol = 0;
+    this.exitCol = Math.floor(Math.random() * (gameSettings.maxCols + 1)); // Setup the exit path
 }
 // Draw the Game Character on the screen, required method for game
 GameChar.prototype.render = function() {
@@ -123,7 +148,7 @@ var Player = function() {
     this.moveToRow = -1;
     this.allowedKeyCode = '';
 
-    this.level = 1;
+    this.level = 0; // Level 0 is no game started
     this.score = 0;
 
     this.reset();
@@ -204,8 +229,29 @@ Player.prototype.loseLife = function() {
         this.sprite = this.playerList[this.lives - 1];
     } else {
         // Game is over, restart game
-        gameSettings.startGame();
+        this.level = 0;
+        gameSettings.startGame(0);
     }
+}
+Player.prototype.renderScore = function() {
+    // Display the score information at the bottom of the screen
+    if (this.level > 0) {
+        gameSettings.lastLevel = this.level;    // preserve the level/score through game end
+        gameSettings.lastScore = this.score;
+    }
+    var gameText1 = "Level: " + gameSettings.lastLevel;
+    var gameText2 = "Score: " + gameSettings.lastScore;
+    ctx.textAlign = "left";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.fillStyle = "white";
+    ctx.fillText(gameText1, 5, gameSettings.canvasHeight - 25);
+    ctx.strokeText(gameText1, 5, gameSettings.canvasHeight - 25);
+
+    ctx.textAlign = "right";
+    ctx.fillText(gameText2, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
+    ctx.strokeText(gameText2, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
+
 }
 
 Player.prototype.reset = function(changeExit) {
@@ -270,11 +316,20 @@ Player.prototype.handleInput = function(keyCode) {
             console.log("Moving is true. New x,y:" + this.destX + ", " + this.destY
                         + " Current x,y: " + this.x + ", " + this.y);
         }
+
+//        console.log("Attempting to start new game: " + this.level + " key: " + keyCode);
+//        if (this.level === 0 && keyCode === "space") {
+//            gameSettings.startGame(1);
+//        }
     }
 }
 
+// Initialze the game settings for use
+var gameSettings = new GameSettings();
+var player;     // Define player as global but don't initialize yet
+var allEnemies; // Define enemies as global but don't initialize
 // This method will start a new game resetting the level details
-gameSettings.startGame();
+gameSettings.startGame(0);
 
 
 // This listens for key presses and sends the keys to your
@@ -284,8 +339,15 @@ document.addEventListener('keyup', function(e) {
         37: 'left',
         38: 'up',
         39: 'right',
-        40: 'down'
+        40: 'down',
+        32: 'space'
     };
-
+    console.log("KeyCode: " + e.keyCode)
     player.handleInput(allowedKeys[e.keyCode]);
+
+    console.log("event listner to start new game: " + player.level + " key: " + e.keyCode);
+    if (player.level === 0 && e.keyCode === 32) {
+        gameSettings.startGame(1);
+    }
+
 });

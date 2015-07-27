@@ -14,6 +14,8 @@
  * a little simpler to work with.
  */
 
+'use strict'
+
 var Engine = (function(global) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
@@ -79,8 +81,10 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        updateEntities(dt);
-        checkCollisions(dt);
+        if (player.level > 0) {
+            updateEntities(dt);
+            checkCollisions(dt);
+        }
     }
 
     /* This is called by the update function  and loops through all of the
@@ -167,7 +171,14 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * gameSettings.colMult, row * gameSettings.rowMult);
                 if (row === gameSettings.maxRows) {
                     // Show the available players based on the number of lives left
-                    if (col <= player.lives - 2) {
+                    if (player.level === 0) {
+                        // Show all players when a game is not in progress
+                        var showPlayers = player.lives -1;
+                    } else {
+                        var showPlayers = player.lives - 2;
+                    }
+
+                    if (col <= showPlayers) {
                         ctx.drawImage(Resources.get(player.playerList[col]), col * gameSettings.colMult, row * gameSettings.rowMult);
                     }
                 }
@@ -187,16 +198,27 @@ var Engine = (function(global) {
      * on your enemy and player entities within app.js
      */
     function renderEntities() {
-        /* Loop through all of the objects within the allEnemies array and call
-         * the render function you have defined.
-         */
-        allEnemies.forEach(function(enemy) {
-            enemy.render();
-        });
 
-        player.render();
+        // Only show Game Characters if a game is in progress
+        if (player.level > 0) {
+            /* Loop through all of the objects within the allEnemies array and call
+             * the render function you have defined.
+             */
+            allEnemies.forEach(function(enemy) {
+                enemy.render();
+            });
+
+            player.render();
+
+        } else {
+            gameSettings.renderStartScreen();
+        }
+
+        // Always display the score so the player can
+        //      see the score from the last game
+        player.renderScore();
     }
-
+    
     /* This function does nothing but it could have been a good place to
      * handle game reset states - maybe a new game menu or a game over screen
      * those sorts of things. It's only called once by the init() method.
