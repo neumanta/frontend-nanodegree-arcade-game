@@ -157,8 +157,20 @@ var Engine = (function(global) {
                  * We're using our Resources helpers to refer to our images
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
-                 */
+                */
+                if (row == 0) {
+                    // Always draw the exit path, then overwrite
+                    //  this will give the top level grass effect
+                    ctx.drawImage(Resources.get(player.exitSprite), col * gameSettings.colMult, row * gameSettings.rowMult);
+                }
+                 
                 ctx.drawImage(Resources.get(rowImages[row]), col * gameSettings.colMult, row * gameSettings.rowMult);
+                if (row === gameSettings.maxRows) {
+                    // Show the available players based on the number of lives left
+                    if (col <= player.lives - 2) {
+                        ctx.drawImage(Resources.get(player.playerList[col]), col * gameSettings.colMult, row * gameSettings.rowMult);
+                    }
+                }
             }
             if (row == 0) {
                 // Now render the exit path
