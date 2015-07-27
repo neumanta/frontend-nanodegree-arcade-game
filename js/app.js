@@ -199,7 +199,7 @@ Player.prototype.update = function(dt) {
                 this.updateScore(gameSettings.goalPoints);
                 allEnemies.push(new Enemy());
                 // console.log("Completed level");
-                player.reset(true); // provide a new exit path
+                this.reset(true); // provide a new exit path
             } else {
                 // Not a valid exit row, lose a life!
                 this.loseLife();
@@ -268,23 +268,25 @@ Player.prototype.reset = function(changeExit) {
 };
 
 Player.prototype.checkCollisions = function(dt) {
+    var self = this;    // Use of the self variable allows reference to this,
+                        //   rather than directly to player (Very helpful feedback from Jose)
     allEnemies.forEach(function(enemy) {
         // Check to see if the enemy and the player are together
-        if (enemy.row === player.row) {
+        if (enemy.row === self.row) {
             // Only check the col after confirming the row, for optimization
 
-            if  (enemy.x < player.x + player.width &&
-                   enemy.x + enemy.width > player.x) {
+            if  (enemy.x < self.x + self.width &&
+                   enemy.x + enemy.width > self.x) {
                    // Collision detection resource:
                     //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
                    // No don't use this calculation for row collisions
-                   //       if (enemy.x < this.x + this.width &&
-                   //       enemy.x + enemy.width > this.x &&
-                   //       enemy.y < this.y + this.height &&
-                   //       enemy.height + enemy.y > this.y) {
+                   //       if (enemy.x < self.x + self.width &&
+                   //       enemy.x + enemy.width > self.x &&
+                   //       enemy.y < self.y + self.height &&
+                   //       enemy.height + enemy.y > self.y) {
 
-                // console.log("Collision at row: " + player.row + " col: " + player.col);
-                player.loseLife();
+                // console.log("Collision at row: " + self.row + " col: " + self.col);
+                self.loseLife();
             }
         }
     });
