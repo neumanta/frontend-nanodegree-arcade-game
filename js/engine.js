@@ -83,7 +83,7 @@ var Engine = (function(global) {
     function update(dt) {
         if (player.level > 0) {
             updateEntities(dt);
-            checkCollisions(dt);
+            player.checkCollisions(dt);
         }
     }
 
@@ -97,31 +97,6 @@ var Engine = (function(global) {
     function updateEntities(dt) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
-        });
-        player.update(dt);
-    }
-
-    function checkCollisions(dt) {
-        allEnemies.forEach(function(enemy) {
-            // Check to see if the enemy and the player are together
-            // if (enemy.col === player.col && enemy.row === player.row) {
-            if (enemy.row === player.row) {
-                // Only check the col after confirming the row, for optimization
-
-                if  (enemy.x < player.x + player.width &&
-                       enemy.x + enemy.width > player.x) {
-                       // Collision detection resource:
-                        //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
-                       // No don't use this calculation for row collisions
-                       //       if (enemy.x < player.x + player.width &&
-                       //       enemy.x + enemy.width > player.x &&
-                       //       enemy.y < player.y + player.height &&
-                       //       enemy.height + enemy.y > player.y) {
-
-                    // console.log("Collision at row: " + player.row + " col: " + player.col);
-                    player.loseLife();
-                }
-            }
         });
         player.update(dt);
     }

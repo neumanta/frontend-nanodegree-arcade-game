@@ -25,8 +25,8 @@ var GameSettings = function(numCols, numRows) {
 
     this.lastLevel = 0;    // preserve the level/score through game end
     this.lastScore = 0;
+};
 
-}
 GameSettings.prototype.startGame = function(startLevel) {
     // Now instantiate your objects.
     // Place all enemy objects in an array called allEnemies
@@ -40,7 +40,8 @@ GameSettings.prototype.startGame = function(startLevel) {
     }
     // console.log("******* NEW GAME STARTED ******")    
 
-}
+};
+
 GameSettings.prototype.renderStartScreen = function() {
     // Display game start screen
     var gameText1 = "Ready for new game?";
@@ -56,8 +57,7 @@ GameSettings.prototype.renderStartScreen = function() {
     
     ctx.fillText(gameText2, gameSettings.canvasWidth / 2, (gameSettings.canvasHeight / textPos) + 50);
     ctx.strokeText(gameText2, gameSettings.canvasWidth / 2, (gameSettings.canvasHeight / textPos) + 50);
-}
-
+};
 
 var GameChar = function(imageFile) {
     // Template for game character
@@ -67,11 +67,12 @@ var GameChar = function(imageFile) {
     this.sprite = imageFile; // Game Character Image
     this.exitSprite = 'images/grass-block.png';
     this.exitCol = Math.floor(Math.random() * (gameSettings.maxCols + 1)); // Setup the exit path
-}
+};
+
 // Draw the Game Character on the screen, required method for game
 GameChar.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);    
-}
+};
 
 // Enemies our player must avoid
 var Enemy = function() {
@@ -80,7 +81,7 @@ var Enemy = function() {
 
     GameChar.call(this, 'images/enemy-bug.png');
     this.reset();
-}
+};
 Enemy.prototype = Object.create(GameChar.prototype);
 Enemy.prototype.constructor = Enemy;
 
@@ -101,7 +102,7 @@ Enemy.prototype.update = function(dt) {
 //    console.log("Enemy/Player col, row: " 
 //        + this.col + "/" + player.col + " "
 //        + this.row + "/" + player.row);
-}
+};
 
 // Create a random row for the Enemy
 Enemy.prototype.reset = function() {
@@ -115,7 +116,7 @@ Enemy.prototype.reset = function() {
 
 
 
-}
+};
 
 
 // Now write your own player class
@@ -152,7 +153,7 @@ var Player = function() {
     this.score = 0;
 
     this.reset();
-}
+};
 Player.prototype = Object.create(GameChar.prototype);
 Player.prototype.constructor = Player;
 
@@ -215,11 +216,11 @@ Player.prototype.update = function(dt) {
 
     }
 
-}
+};
 Player.prototype.updateScore = function (newPoints) {
     this.score += newPoints;
     // console.log("New Score: " + this.score);
-}
+};
 Player.prototype.loseLife = function() {
     this.lives--;
 
@@ -232,7 +233,7 @@ Player.prototype.loseLife = function() {
         this.level = 0;
         gameSettings.startGame(0);
     }
-}
+};
 Player.prototype.renderScore = function() {
     // Display the score information at the bottom of the screen
     if (this.level > 0) {
@@ -252,7 +253,7 @@ Player.prototype.renderScore = function() {
     ctx.fillText(gameText2, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
     ctx.strokeText(gameText2, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
 
-}
+};
 
 Player.prototype.reset = function(changeExit) {
     // Reset to the start position for player
@@ -264,7 +265,33 @@ Player.prototype.reset = function(changeExit) {
     if (changeExit) {
        this.exitCol = Math.floor(Math.random() * (gameSettings.maxCols + 1)); // Setup the exit path
     }
-}
+};
+
+Player.prototype.checkCollisions = function(dt) {
+    allEnemies.forEach(function(enemy) {
+        // Check to see if the enemy and the player are together
+        if (enemy.row === player.row) {
+            // Only check the col after confirming the row, for optimization
+
+            if  (enemy.x < player.x + player.width &&
+                   enemy.x + enemy.width > player.x) {
+                   // Collision detection resource:
+                    //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
+                   // No don't use this calculation for row collisions
+                   //       if (enemy.x < this.x + this.width &&
+                   //       enemy.x + enemy.width > this.x &&
+                   //       enemy.y < this.y + this.height &&
+                   //       enemy.height + enemy.y > this.y) {
+
+                // console.log("Collision at row: " + player.row + " col: " + player.col);
+                player.loseLife();
+            }
+        }
+    });
+    this.update(dt);
+};
+
+
 
 Player.prototype.handleInput = function(keyCode) {
 
@@ -322,7 +349,7 @@ Player.prototype.handleInput = function(keyCode) {
 //            gameSettings.startGame(1);
 //        }
     }
-}
+};
 
 // Initialze the game settings for use
 var gameSettings = new GameSettings(4, 5);
