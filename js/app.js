@@ -14,7 +14,7 @@ var GameSettings = function(numCols, numRows) {
     this.canvasWidth = (this.maxCols + 1) * this.colMult; // 505;
     this.canvasHeight = (this.maxRows + 1) * this.rowMult + 108; // 606;
 
-    this.spriteHeight = 101;
+    this.spriteWidth = 101;
     this.spriteHeight = 171;
     this.enemyRowOffset = -20;
     this.playerRowOffset = -40;
@@ -61,7 +61,7 @@ GameSettings.prototype.renderStartScreen = function() {
 
 var GameChar = function(imageFile) {
     // Template for game character
-    this.width = gameSettings.spriteHeight / gameSettings.collisionRadius;
+    this.width = gameSettings.spriteWidth / gameSettings.collisionRadius;
     this.height = gameSettings.spriteHeight / gameSettings.collisionRadius;
 
     this.sprite = imageFile; // Game Character Image
@@ -113,9 +113,6 @@ Enemy.prototype.reset = function() {
     this.y = this.row * gameSettings.rowMult + gameSettings.enemyRowOffset;   // Always start at leas 1 row down.
     this.speed = ((Math.floor(Math.random() * player.level) + 1) * 25) + 50;   // Offer up to 4 diff speeds
     // console.log("Reset Enemy x: " + this.x + " y: " + this.y + " speed:" + this.speed);
-
-
-
 };
 
 
@@ -240,18 +237,18 @@ Player.prototype.renderScore = function() {
         gameSettings.lastLevel = this.level;    // preserve the level/score through game end
         gameSettings.lastScore = this.score;
     }
-    var gameText1 = "Level: " + gameSettings.lastLevel;
-    var gameText2 = "Score: " + gameSettings.lastScore;
+    var gameLevel = "Level: " + gameSettings.lastLevel;
+    var gameScore = "Score: " + gameSettings.lastScore;
     ctx.textAlign = "left";
     ctx.strokeStyle = "black";
     ctx.lineWidth = 3;
     ctx.fillStyle = "white";
-    ctx.fillText(gameText1, 5, gameSettings.canvasHeight - 25);
-    ctx.strokeText(gameText1, 5, gameSettings.canvasHeight - 25);
+    ctx.fillText(gameLevel, 5, gameSettings.canvasHeight - 25);
+    ctx.strokeText(gameLevel, 5, gameSettings.canvasHeight - 25);
 
     ctx.textAlign = "right";
-    ctx.fillText(gameText2, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
-    ctx.strokeText(gameText2, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
+    ctx.fillText(gameScore, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
+    ctx.strokeText(gameScore, gameSettings.canvasWidth - 5, gameSettings.canvasHeight - 25);
 
 };
 
@@ -275,10 +272,10 @@ Player.prototype.checkCollisions = function(dt) {
         if (enemy.row === self.row) {
             // Only check the col after confirming the row, for optimization
 
-            if  (enemy.x < self.x + self.width &&
-                   enemy.x + enemy.width > self.x) {
+            if  (enemy.x < self.x + self.width 
+                   && enemy.x + enemy.width > self.x) {
                    // Collision detection resource:
-                    //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
+                   //      https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
                    // No don't use this calculation for row collisions
                    //       if (enemy.x < self.x + self.width &&
                    //       enemy.x + enemy.width > self.x &&

@@ -146,7 +146,7 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                 */
-                if (row == 0) {
+                if (row === 0) {
                     // Always draw the exit path, then overwrite
                     //  this will give the top level grass effect
                     ctx.drawImage(Resources.get(player.exitSprite), col * gameSettings.colMult, row * gameSettings.rowMult);
